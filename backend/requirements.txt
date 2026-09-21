@@ -6,3 +6,4 @@ numpy==1.26.4
 tensorflow==2.16.1
 python-decouple==3.8
 mysqlclient
+gunicorn==23.0.0
