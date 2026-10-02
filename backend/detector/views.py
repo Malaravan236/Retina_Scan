@@ -69,26 +69,28 @@ class HistoryDeleteView(generics.DestroyAPIView):
 
 
 class StatsView(APIView):
-    """GET /api/stats/ -> aggregate dashboard numbers."""
-
     def get(self, request):
-        qs = ScanRecord.objects.all()
-        total = qs.count()
-        dr_count = qs.filter(predicted_class="DR").count()
-        no_dr_count = qs.filter(predicted_class="No DR").count()
-        avg_confidence = qs.aggregate(avg=Avg("confidence"))["avg"] or 0
-        latest = qs.first()
+        try:
+            qs = ScanRecord.objects.all()
+            total = qs.count()
+            dr_count = qs.filter(predicted_class="DR").count()
+            no_dr_count = qs.filter(predicted_class="No DR").count()
+            avg_confidence = qs.aggregate(avg=Avg("confidence"))["avg"] or 0
+            latest = qs.order_by('-id').first()
 
-        return Response(
-            {
+            return Response({
                 "total_scans": total,
                 "dr_count": dr_count,
                 "no_dr_count": no_dr_count,
                 "dr_rate": round((dr_count / total) * 100, 1) if total else 0,
                 "average_confidence": round(avg_confidence * 100, 1),
                 "latest_scan": ScanRecordSerializer(latest, context={"request": request}).data if latest else None,
-            }
-        )
+            })
+        except Exception as e:
+            print("STATS ERROR:", e)
+            import traceback
+            traceback.print_exc()
+            return Response({"error": str(e)}, status=500)
 
 
 class HealthCheckView(APIView):
