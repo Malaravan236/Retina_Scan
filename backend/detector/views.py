@@ -7,37 +7,40 @@ from . import ml_engine
 from .models import ScanRecord
 from .serializers import ScanRecordSerializer
 
+# CORS HELPER DA
+def add_cors_headers(response):
+    response["Access-Control-Allow-Origin"] = "*"
+    response["Access-Control-Allow-Methods"] = "GET, POST, DELETE, OPTIONS"
+    response["Access-Control-Allow-Headers"] = "*"
+    return response
 
 class PredictView(APIView):
-    """
-    POST /api/predict/
-    multipart/form-data:
-        image        -> required, the retina scan image file
-        patient_name -> optional, defaults to "Anonymous"
-    """
-
     def post(self, request):
         image_file = request.FILES.get("image")
         if not image_file:
-            return Response(
+            resp = Response(
                 {"error": "No image provided. Attach a file under the 'image' field."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+            return add_cors_headers(resp)
 
         allowed_types = ("image/jpeg", "image/png", "image/jpg", "image/webp")
         if image_file.content_type not in allowed_types:
-            return Response(
+            resp = Response(
                 {"error": f"Unsupported file type: {image_file.content_type}. Upload a JPG, PNG or WEBP image."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+            return add_cors_headers(resp)
 
         try:
             image_bytes = image_file.read()
             result = ml_engine.run_inference(image_bytes)
         except FileNotFoundError as exc:
-            return Response({"error": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            resp = Response({"error": str(exc)}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
+            return add_cors_headers(resp)
         except Exception as exc:
-            return Response({"error": f"Prediction failed: {exc}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            resp = Response({"error": f"Prediction failed: {exc}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return add_cors_headers(resp)
 
         image_file.seek(0)
         record = ScanRecord.objects.create(
@@ -50,23 +53,31 @@ class PredictView(APIView):
         )
 
         serializer = ScanRecordSerializer(record, context={"request": request})
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        resp = Response(serializer.data, status=status.HTTP_201_CREATED)
+        return add_cors_headers(resp)
 
+    def options(self, request, *args, **kwargs):
+        resp = Response(status=status.HTTP_200_OK)
+        return add_cors_headers(resp)
 
 class HistoryListView(generics.ListAPIView):
-    """GET /api/history/  -> paginated list of past scans, newest first."""
     queryset = ScanRecord.objects.all()
     serializer_class = ScanRecordSerializer
 
     def get_serializer_context(self):
         return {"request": self.request}
-
+    
+    def list(self, request, *args, **kwargs):
+        resp = super().list(request, *args, **kwargs)
+        return add_cors_headers(resp)
 
 class HistoryDeleteView(generics.DestroyAPIView):
-    """DELETE /api/history/<id>/"""
     queryset = ScanRecord.objects.all()
     serializer_class = ScanRecordSerializer
 
+    def destroy(self, request, *args, **kwargs):
+        resp = super().destroy(request, *args, **kwargs)
+        return add_cors_headers(resp)
 
 class StatsView(APIView):
     def get(self, request):
@@ -78,7 +89,7 @@ class StatsView(APIView):
             avg_confidence = qs.aggregate(avg=Avg("confidence"))["avg"] or 0
             latest = qs.order_by('-id').first()
 
-            return Response({
+            resp = Response({
                 "total_scans": total,
                 "dr_count": dr_count,
                 "no_dr_count": no_dr_count,
@@ -86,16 +97,19 @@ class StatsView(APIView):
                 "average_confidence": round(avg_confidence * 100, 1),
                 "latest_scan": ScanRecordSerializer(latest, context={"request": request}).data if latest else None,
             })
+            return add_cors_headers(resp)
         except Exception as e:
             print("STATS ERROR:", e)
             import traceback
             traceback.print_exc()
-            return Response({"error": str(e)}, status=500)
-
+            resp = Response({"error": str(e)}, status=500)
+            return add_cors_headers(resp)
+    
+    def options(self, request, *args, **kwargs):
+        resp = Response(status=status.HTTP_200_OK)
+        return add_cors_headers(resp)
 
 class HealthCheckView(APIView):
-    """GET /api/health/ -> simple readiness probe used by the frontend."""
-
     def get(self, request):
         model_ready = True
         error = None
@@ -105,10 +119,15 @@ class HealthCheckView(APIView):
             model_ready = False
             error = str(exc)
 
-        return Response(
+        resp = Response(
             {
                 "status": "healthy",
                 "model_loaded": model_ready,
                 "error": error,
             }
         )
+        return add_cors_headers(resp)
+    
+    def options(self, request, *args, **kwargs):
+        resp = Response(status=status.HTTP_200_OK)
+        return add_cors_headers(resp)
