@@ -2,6 +2,10 @@ import axios from 'axios'
 
 const API_URL = "https://retina-scan-final.onrender.com"
 
+const api = axios.create({
+  baseURL: API_URL,
+})
+
 export const predictScan = (file, patientName) => {
   const formData = new FormData()
   formData.append('image', file)
