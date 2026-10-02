@@ -1,8 +1,6 @@
 import axios from 'axios'
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
-})
+const API_URL = "https://retina-scan-final.onrender.com"
 
 export const predictScan = (file, patientName) => {
   const formData = new FormData()
