@@ -10,7 +10,7 @@ SECRET_KEY = 'django-insecure-retinascan-dev-key-change-in-production-9x82jz'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*', 'retina-scan-2.onrender.com', 'retina-scan-five.vercel.app']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -75,15 +75,17 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS - allow the React dev server
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    "https://retina-scan-five.vercel.app",
+    "https://retina-scan-2.onrender.com",
+]
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -95,12 +97,9 @@ REST_FRAMEWORK = {
     ],
 }
 
-# ---------------------------------------------------------------------------
-# ML model configuration
-# ---------------------------------------------------------------------------
 ML_MODEL_PATH = os.path.join(BASE_DIR, 'detector', 'ml_model', 'my_model.keras')
 ML_IMG_SIZE = (224, 224)
-ML_CLASS_LABELS = ["DR", "No DR"]  # index 0 -> DR probability, index 1 -> No DR probability
+ML_CLASS_LABELS = ["DR", "No DR"]
 
-FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
