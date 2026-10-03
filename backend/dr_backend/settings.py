@@ -25,7 +25,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    "dr_backend.cors_fix.ForceCorsMiddleware",
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -87,9 +86,12 @@ CORS_ALLOW_HEADERS = ["*"]
 CORS_ALLOW_METHODS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
     "https://retina-scan-five.vercel.app",
     "https://retina-scan-2.onrender.com",
 ]
+
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -107,3 +109,9 @@ ML_CLASS_LABELS = ["DR", "No DR"]
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
 DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
