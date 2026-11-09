@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # 👁️ RetinaScan AI – Diabetic Retinopathy Detection
 
 An AI-powered Full Stack Web Application that analyzes retinal fundus images and predicts Diabetic Retinopathy (DR) status using a CNN-based deep learning model.
@@ -183,4 +183,4 @@ This project is developed for educational and portfolio purposes. It is not a cl
 ⭐ If you find this project interesting, feel free to explore the repository and give it a star!
 =======
 # Retina_Scan
->>>>>>> 1101bd9cf9daa6c2ae48a8f91d0c57269af0d1fa
+
